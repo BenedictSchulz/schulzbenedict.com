@@ -23,7 +23,9 @@ import Breadcrumbs from "./Breadcrumbs"
 import Comments from "./Comments"
 import Flex from "./Flex"
 import ConditionalRender from "./ConditionalRender"
-import HeaderNav from "./HeaderNav"
+import RelatedLabel from "./RelatedLabel"
+import SidebarToggle from "./SidebarToggle"
+import MobileGraph from "./MobileGraph"
 
 export {
   ArticleTitle,
@@ -51,5 +53,7 @@ export {
   Comments,
   Flex,
   ConditionalRender,
-  HeaderNav,
+  RelatedLabel,
+  SidebarToggle,
+  MobileGraph,
 }
