@@ -13,10 +13,10 @@ Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren 
 
 Verantwortlich für die Datenverarbeitung auf dieser Website ist:
 
-Benedict Schulz<br>
-Detlef-von-Liliencron Straße 14<br>
-16321 Bernau<br>
-E-Mail: benedict [at] schulzbenedict [dot] com
+{{IMPRESSUM_NAME}}<br>
+{{IMPRESSUM_ADDRESS}}<br>
+{{IMPRESSUM_CITY}}<br>
+E-Mail: {{IMPRESSUM_EMAIL}}
 
 ## 3. Hosting
 

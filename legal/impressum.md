@@ -5,13 +5,13 @@ publish: true
 
 ## Angaben gemäß § 5 DDG
 
-Benedict Schulz<br>
-Detlef-von-Liliencron Straße 14<br>
-16321 Bernau
+{{IMPRESSUM_NAME}}<br>
+{{IMPRESSUM_ADDRESS}}<br>
+{{IMPRESSUM_CITY}}
 
 ## Kontakt
 
-E-Mail: benedict [at] schulzbenedict [dot] com
+E-Mail: {{IMPRESSUM_EMAIL}}
 
 ## Haftung für Inhalte
 
