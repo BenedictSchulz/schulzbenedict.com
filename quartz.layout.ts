@@ -51,6 +51,11 @@ export const defaultContentPageLayout: PageLayout = {
   left: [],
   right: [
     Component.Graph(),
+    Component.Explorer({
+      title: "Folders",
+      folderClickBehavior: "link",
+      folderDefaultState: "collapsed",
+    }),
   ],
 }
 
@@ -60,5 +65,10 @@ export const defaultListPageLayout: PageLayout = {
   left: [],
   right: [
     Component.Graph(),
+    Component.Explorer({
+      title: "Folders",
+      folderClickBehavior: "link",
+      folderDefaultState: "collapsed",
+    }),
   ],
 }
