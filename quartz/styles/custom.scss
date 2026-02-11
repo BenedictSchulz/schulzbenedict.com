@@ -53,10 +53,14 @@
   }
 }
 
-// On pages without graph, never show sidebar even if toggled
-body[data-slug="index"] .sidebar.right,
+// On legal pages, never show sidebar even if toggled
 body[data-slug="impressum"] .sidebar.right,
 body[data-slug="datenschutz"] .sidebar.right {
+  display: none !important;
+}
+
+// On index page, show sidebar (Explorer) but hide graph
+body[data-slug="index"] .sidebar.right .graph {
   display: none !important;
 }
 

@@ -29,8 +29,7 @@
   }
 }
 
-// Hide on pages without graph
-body[data-slug="index"] .sidebar-toggle,
+// Hide on pages without sidebar
 body[data-slug="impressum"] .sidebar-toggle,
 body[data-slug="datenschutz"] .sidebar-toggle {
   display: none !important;
