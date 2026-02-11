@@ -55,7 +55,7 @@ export const defaultContentPageLayout: PageLayout = {
       title: "Folders",
       folderClickBehavior: "link",
       folderDefaultState: "collapsed",
-      filterFn: (node) => node.name !== "impressum" && node.name !== "datenschutz",
+      filterFn: (node) => node.slugSegment !== "impressum" && node.slugSegment !== "datenschutz",
     }),
   ],
 }
@@ -70,7 +70,7 @@ export const defaultListPageLayout: PageLayout = {
       title: "Folders",
       folderClickBehavior: "link",
       folderDefaultState: "collapsed",
-      filterFn: (node) => node.name !== "impressum" && node.name !== "datenschutz",
+      filterFn: (node) => node.slugSegment !== "impressum" && node.slugSegment !== "datenschutz",
     }),
   ],
 }
