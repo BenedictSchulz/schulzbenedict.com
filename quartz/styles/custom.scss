@@ -1,19 +1,130 @@
 @use "./base.scss";
 
-// Typography — EB Garamond body, Source Sans 3 UI headings
+// ============================================================
+// LAYOUT — Single column by default, toggleable right sidebar
+// ============================================================
+
+// Default: single centered column, no grid
+.page > #quartz-body {
+  display: block !important;
+  max-width: 750px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+// Both sidebars hidden by default
+.sidebar {
+  display: none !important;
+}
+
+// Desktop (>900px): when sidebar is toggled open, switch to 2-column
+@media all and (min-width: 901px) {
+  body.show-sidebar > .page > #quartz-body {
+    display: grid !important;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: 1fr auto;
+    grid-template-areas:
+      "grid-center grid-sidebar-right"
+      "grid-footer grid-footer";
+    gap: 0 2rem;
+    max-width: 1100px;
+    padding: 0 2rem;
+  }
+
+  body.show-sidebar .sidebar.left {
+    display: none !important;
+  }
+
+  body.show-sidebar > .page > #quartz-body > .center {
+    grid-area: grid-center;
+    min-width: 0;
+  }
+
+  body.show-sidebar .sidebar.right {
+    display: flex !important;
+    flex-direction: column;
+    grid-area: grid-sidebar-right;
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+    max-height: calc(100vh - 4rem);
+    padding: 0;
+    gap: 1rem;
+  }
+}
+
+// On pages without graph, never show sidebar even if toggled
+body[data-slug="index"] .sidebar.right,
+body[data-slug="impressum"] .sidebar.right,
+body[data-slug="datenschutz"] .sidebar.right {
+  display: none !important;
+}
+
+// ============================================================
+// HEADER — search + darkmode icons, right-aligned
+// ============================================================
+
+// Reduce top spacing from Quartz default 6rem
+.page > #quartz-body .page-header {
+  margin-top: 2rem;
+}
+
+.page-header > header {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 0;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--lightgray);
+}
+
+// Search: icon only, no text, no border
+.page-header .search {
+  min-width: unset;
+  max-width: unset;
+}
+
+.page-header .search > .search-button {
+  border: none;
+  padding: 0;
+  width: auto;
+  height: auto;
+  background: transparent;
+}
+
+.page-header .search > .search-button > p {
+  display: none;
+}
+
+.page-header .search > .search-button svg {
+  margin: 0;
+  width: 18px;
+  min-width: 18px;
+}
+
+// Darkmode toggle
+.page-header .darkmode {
+  margin-left: 0;
+}
+
+// ============================================================
+// TYPOGRAPHY
+// ============================================================
+
 body {
   font-size: 20px;
   -webkit-font-smoothing: auto;
 }
 
-// Override Quartz's text color mapping:
 // Body text = --dark (bright), headings/nav = --darkgray (muted)
 p, ul, ol, li, td, tr, text, a, .katex, .math {
   color: var(--dark);
   fill: var(--dark);
 }
 
-// Sans-serif headings — muted for hierarchy
+// Sans-serif headings — muted
 h1, h2, h3, h4 {
   font-family: "Source Sans 3", var(--headerFont), sans-serif;
   font-weight: 600;
@@ -21,12 +132,7 @@ h1, h2, h3, h4 {
   color: var(--darkgray);
 }
 
-// Page title in sidebar
-h1.page-title {
-  font-size: 1.1rem;
-}
-
-// Article title — bright, not muted
+// Article title — bright, prominent
 article h1,
 .article-title {
   font-size: 1.75rem;
@@ -50,23 +156,7 @@ article h2 {
   border-bottom: 1px solid var(--lightgray);
 }
 
-// Math — preserve KaTeX fonts, don't let body font override
-.katex {
-  font-family: KaTeX_Main, "Times New Roman", serif !important;
-  font-size: 1.1em;
-}
-
-// Math blocks — gold accent styling
-.katex-display {
-  background: var(--highlight);
-  border-left: 3px solid var(--secondary);
-  padding: 1.25rem 1.5rem;
-  margin: 1.5rem 0;
-  border-radius: 0 6px 6px 0;
-  font-family: KaTeX_Main, "Times New Roman", serif !important;
-}
-
-// h3 — small gold label, no uppercase, no underline
+// h3 — small gold label
 article h3 {
   font-family: "Source Sans 3", sans-serif;
   font-weight: 600;
@@ -83,12 +173,28 @@ article h3 {
   font-size: 0.85rem;
 }
 
-// Wider content area
-.center {
-  max-width: 750px;
+// ============================================================
+// MATH
+// ============================================================
+
+.katex {
+  font-family: KaTeX_Main, "Times New Roman", serif !important;
+  font-size: 1.1em;
 }
 
-// Links — subtle, accent colored
+.katex-display {
+  background: var(--highlight);
+  border-left: 3px solid var(--secondary);
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  border-radius: 0 6px 6px 0;
+  font-family: KaTeX_Main, "Times New Roman", serif !important;
+}
+
+// ============================================================
+// LINKS
+// ============================================================
+
 a {
   text-decoration: none;
 
@@ -97,7 +203,7 @@ a {
   }
 }
 
-// Content links — gold with subtle underline, solid on hover
+// Content links — gold with subtle underline
 article a,
 article a.internal {
   color: var(--secondary);
@@ -116,7 +222,10 @@ article a.internal:hover {
   text-decoration: none;
 }
 
-// Blockquotes — readable, not italic
+// ============================================================
+// BLOCKQUOTES
+// ============================================================
+
 blockquote {
   border-left: 2px solid var(--lightgray);
   padding-left: 1rem;
@@ -124,7 +233,10 @@ blockquote {
   font-style: normal;
 }
 
-// Code blocks
+// ============================================================
+// CODE
+// ============================================================
+
 pre {
   background: var(--light) !important;
   border: 1px solid var(--lightgray);
@@ -132,17 +244,14 @@ pre {
   font-size: 0.85rem;
 }
 
-// Dark mode: code bg slightly darker than page
 :root[saved-theme="dark"] pre {
   background: #161514 !important;
 }
 
-// Light mode: code bg matches surface
 :root[saved-theme="light"] pre {
   background: #f2efe9 !important;
 }
 
-// Inline code — neutral bg to differentiate from math/tag gold tint
 code {
   font-size: 0.88em;
   padding: 0.15em 0.35em;
@@ -150,33 +259,15 @@ code {
   background: var(--lightgray);
 }
 
-// Pre > code shouldn't double-pad
 pre code {
   padding: 0;
   background: none;
 }
 
-// Graph styling
-.graph > svg {
-  .node circle {
-    fill: var(--secondary);
-  }
-  .node.active circle {
-    fill: var(--secondary);
-    filter: brightness(1.3);
-  }
-  .link {
-    stroke: var(--lightgray);
-  }
-}
+// ============================================================
+// TABLES
+// ============================================================
 
-// Footer — very quiet
-footer {
-  opacity: 0.4;
-  font-size: 0.8rem;
-}
-
-// Table headers — gold label style matching h3
 th {
   font-family: "Source Sans 3", sans-serif;
   font-weight: 600;
@@ -185,8 +276,251 @@ th {
   color: var(--secondary);
 }
 
-// Tags
+// ============================================================
+// RELATED SECTION — label replacing <hr> before afterBody
+// ============================================================
+
+// Hide the default <hr> Quartz puts between content and page-footer
+#quartz-body > .center > hr {
+  display: none;
+}
+
+.related-label {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--lightgray);
+  margin-bottom: 0;
+}
+
+.related-label > span {
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray);
+  opacity: 0.6;
+}
+
+// ============================================================
+// GRAPH — sidebar version (desktop) + mobile inline version
+// ============================================================
+
+// Sidebar graph (right sidebar, desktop only)
+.sidebar.right .graph > h3 {
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gray);
+  opacity: 0.6;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar.right .graph > .graph-outer {
+  height: 250px;
+  border: 1px solid var(--lightgray);
+  border-radius: 6px;
+}
+
+// Mobile graph (inline in afterBody, <=900px only)
+.mobile-graph {
+  display: none;
+
+  @media all and (max-width: 900px) {
+    display: block;
+    margin-top: 1.5rem;
+  }
+
+  .graph > h3 {
+    font-family: "Source Sans 3", sans-serif;
+    font-weight: 600;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gray);
+    opacity: 0.6;
+    margin-bottom: 0.5rem;
+  }
+
+  .graph > .graph-outer {
+    height: 250px;
+    border: 1px solid var(--lightgray);
+    border-radius: 6px;
+  }
+}
+
+// Graph colors (shared)
+.graph svg .node circle {
+  fill: var(--secondary);
+}
+
+.graph svg .node.active circle {
+  fill: var(--secondary);
+  filter: brightness(1.3);
+}
+
+.graph svg .link {
+  stroke: var(--lightgray);
+}
+
+// Global graph icon — theme color
+.graph > .graph-outer > .global-graph-icon {
+  color: var(--secondary);
+  opacity: 0.7;
+
+  &:hover {
+    opacity: 1;
+    background-color: var(--lightgray);
+  }
+}
+
+// Global graph overlay
+.graph > .global-graph-outer > .global-graph-container {
+  border-color: var(--lightgray);
+  background-color: var(--light);
+}
+
+// ============================================================
+// BACKLINKS — below graph
+// ============================================================
+
+.backlinks {
+  margin-top: 2rem;
+  padding-top: 0;
+  border-top: none;
+}
+
+.backlinks > h3 {
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 600;
+  font-size: 0.88rem;
+  letter-spacing: 0.05em;
+  color: var(--secondary);
+  text-transform: none;
+}
+
+.backlinks > ul {
+  padding-left: 0;
+  list-style: none;
+}
+
+.backlinks > ul > li {
+  padding: 0.3rem 0;
+}
+
+.backlinks > ul > li > a {
+  color: var(--dark);
+  font-weight: 400;
+  background-color: transparent !important;
+}
+
+.backlinks > ul > li > a:hover {
+  color: var(--secondary);
+}
+
+// ============================================================
+// RECENT NOTES — homepage auto-list
+// ============================================================
+
+.recent-notes {
+  margin-top: 3rem;
+}
+
+.recent-notes h3 {
+  font-family: "Source Sans 3", sans-serif;
+  font-weight: 600;
+  font-size: 0.95rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--darkgray);
+  padding-bottom: 0.4rem;
+  border-bottom: 1px solid var(--lightgray);
+}
+
+.recent-ul {
+  list-style: none;
+  padding: 0;
+}
+
+.recent-li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--lightgray);
+}
+
+.recent-li .section {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.recent-li .desc h3 {
+  font-family: var(--bodyFont);
+  font-size: 1rem;
+  font-weight: 400;
+  color: var(--dark);
+  letter-spacing: 0;
+  text-transform: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recent-li .desc h3 a {
+  color: var(--dark);
+  font-weight: 400;
+}
+
+.recent-li .desc h3 a:hover {
+  color: var(--secondary);
+}
+
+.recent-li .meta {
+  font-size: 0.8rem;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+// ============================================================
+// FOOTER
+// ============================================================
+
+footer {
+  opacity: 0.4;
+  font-size: 0.8rem;
+  text-align: center;
+  margin-top: 4rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--lightgray);
+}
+
+footer ul {
+  justify-content: center;
+}
+
+// ============================================================
+// TAGS
+// ============================================================
+
 a.tag-link {
   font-family: "Source Sans 3", var(--headerFont), sans-serif;
   font-size: 0.8rem;
+}
+
+// ============================================================
+// HOMEPAGE — hide meta on index page
+// ============================================================
+
+body[data-slug="index"] .article-title {
+  display: none;
+}
+
+body[data-slug="index"] .content-meta {
+  display: none;
+}
+
+body[data-slug="index"] .tag-list {
+  display: none;
 }
