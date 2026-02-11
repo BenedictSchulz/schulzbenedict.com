@@ -55,6 +55,7 @@ export const defaultContentPageLayout: PageLayout = {
       title: "Folders",
       folderClickBehavior: "link",
       folderDefaultState: "collapsed",
+      filterFn: (node) => node.name !== "impressum" && node.name !== "datenschutz",
     }),
   ],
 }
@@ -69,6 +70,7 @@ export const defaultListPageLayout: PageLayout = {
       title: "Folders",
       folderClickBehavior: "link",
       folderDefaultState: "collapsed",
+      filterFn: (node) => node.name !== "impressum" && node.name !== "datenschutz",
     }),
   ],
 }
