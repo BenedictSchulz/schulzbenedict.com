@@ -14,6 +14,7 @@ export default ((opts?: Options) => {
     return (
       <footer class={`${displayClass ?? ""}`}>
         <ul>
+          <li>&copy; {year} Benedict Schulz</li>
           {Object.entries(links).map(([text, link]) => (
             <li>
               <a href={link}>{text}</a>
