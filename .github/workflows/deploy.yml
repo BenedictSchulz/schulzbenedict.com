@@ -1,0 +1,51 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [v4]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Inject legal pages from templates
+        run: |
+          for f in legal/*.md; do
+            sed -e "s|{{IMPRESSUM_NAME}}|${{ secrets.IMPRESSUM_NAME }}|g" \
+                -e "s|{{IMPRESSUM_ADDRESS}}|${{ secrets.IMPRESSUM_ADDRESS }}|g" \
+                -e "s|{{IMPRESSUM_CITY}}|${{ secrets.IMPRESSUM_CITY }}|g" \
+                -e "s|{{IMPRESSUM_EMAIL}}|${{ secrets.IMPRESSUM_EMAIL }}|g" \
+                "$f" > "content/$(basename "$f")"
+          done
+
+      - name: Build Quartz
+        run: npx quartz build
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.HETZNER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.HETZNER_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to Hetzner
+        run: |
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            public/ \
+            ${{ secrets.HETZNER_USER }}@${{ secrets.HETZNER_HOST }}:${{ secrets.DEPLOY_PATH }}/

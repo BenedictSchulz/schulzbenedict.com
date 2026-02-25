@@ -10,3 +10,5 @@ private/
 .replit
 replit.nix
 .env
+content/impressum.md
+content/datenschutz.md

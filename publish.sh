@@ -1,0 +1,290 @@
+#!/bin/bash
+set -euo pipefail
+
+VAULT="$HOME/vault_obsidian"
+QUARTZ="$HOME/workspace/github.com/BenedictSchulz/quartz"
+CONTENT="$QUARTZ/content"
+ATTACHMENTS="$CONTENT/Attachments"
+RESOURCES_DIR="$VAULT/90 Sources/Resources"
+
+PUBLISH_DIRS="10 Lectures|20 Notes|30 MOCs"
+SKIP_DIRS="00 Inbox|01 Daily Notes|99 Templates|.obsidian"
+SKIP_FILES="impressum.md|datenschutz.md"
+IMAGE_EXT="png|jpg|jpeg|gif|svg|webp|pdf"
+
+PUBLISH_LIST=$(mktemp)
+IMAGE_REF_LIST=$(mktemp)
+trap 'rm -f "$PUBLISH_LIST" "$IMAGE_REF_LIST"' EXIT
+
+has_publish_true() {
+  awk '/^---$/ { if (++c == 2) exit } c == 1 { print }' "$1" \
+    | grep -qi '^publish: *true'
+}
+
+is_newer() {
+  [ ! -f "$2" ] && return 0
+  [ "$1" -nt "$2" ]
+}
+
+get_frontmatter_field() {
+  local file="$1" field="$2"
+  awk '/^---$/ { if (++c == 2) exit } c == 1 { print }' "$file" \
+    | grep -i "^${field}:" \
+    | head -1 \
+    | sed -E "s/^${field}: *//i" \
+    | tr -d '"' \
+    | tr -d "'" || true
+}
+
+get_file_mdate() {
+  stat -f '%Sm' -t '%Y-%m-%d' "$1"
+}
+
+copy_with_dates() {
+  local vault_file="$1" dest="$2"
+  local today
+  today=$(date '+%Y-%m-%d')
+
+  local vault_mdate
+  vault_mdate=$(get_file_mdate "$vault_file")
+
+  local created modified published
+
+  if [ -f "$dest" ]; then
+    created=$(get_frontmatter_field "$dest" "created")
+    published=$(get_frontmatter_field "$dest" "published")
+    modified="$vault_mdate"
+    [ -z "$created" ] && created="$vault_mdate"
+    [ -z "$published" ] && published="$today"
+  else
+    created=$(get_frontmatter_field "$vault_file" "created")
+    [ -z "$created" ] && created="$vault_mdate"
+    modified="$vault_mdate"
+    published="$today"
+  fi
+
+  local first_line
+  first_line=$(head -1 "$vault_file")
+
+  mkdir -p "$(dirname "$dest")"
+
+  if [ "$first_line" = "---" ]; then
+    awk -v created="$created" -v modified="$modified" -v published="$published" '
+    BEGIN { in_fm = 0; fm_count = 0; printed_created = 0; printed_modified = 0; printed_published = 0 }
+    /^---$/ {
+      fm_count++
+      if (fm_count == 1) {
+        in_fm = 1
+        print
+        next
+      }
+      if (fm_count == 2) {
+        if (!printed_created) print "created: " created
+        if (!printed_modified) print "modified: " modified
+        if (!printed_published) print "published: " published
+        in_fm = 0
+        print
+        next
+      }
+    }
+    in_fm == 1 && /^created:/ {
+      print "created: " created
+      printed_created = 1
+      next
+    }
+    in_fm == 1 && /^modified:/ {
+      print "modified: " modified
+      printed_modified = 1
+      next
+    }
+    in_fm == 1 && /^published:/ {
+      print "published: " published
+      printed_published = 1
+      next
+    }
+    { print }
+    ' "$vault_file" > "$dest"
+  else
+    {
+      echo "---"
+      echo "created: $created"
+      echo "modified: $modified"
+      echo "published: $published"
+      echo "---"
+      echo ""
+      cat "$vault_file"
+    } > "$dest"
+  fi
+}
+
+if [ -L "$CONTENT" ]; then
+  echo "Error: $CONTENT is a symlink. Refusing to operate."
+  exit 1
+fi
+
+if [ ! -d "$VAULT" ]; then
+  echo "Error: Vault not found at $VAULT"
+  exit 1
+fi
+
+if [ ! -d "$QUARTZ" ]; then
+  echo "Error: Quartz repo not found at $QUARTZ"
+  exit 1
+fi
+
+IFS='|' read -ra PD_ARR <<< "$PUBLISH_DIRS"
+for dir in "${PD_ARR[@]}"; do
+  if [ -d "$VAULT/$dir" ]; then
+    while IFS= read -r -d '' file; do
+      filename="$(basename "$file")"
+      if echo "$filename" | grep -qE "^(${SKIP_FILES})$"; then
+        continue
+      fi
+      rel_path="${file#$VAULT/}"
+      echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
+    done < <(find "$VAULT/$dir" -type f -name '*.md' -print0)
+  fi
+done
+
+while IFS= read -r -d '' dir; do
+  dirname="$(basename "$dir")"
+  if echo "$dirname" | grep -qE "^(${PUBLISH_DIRS}|${SKIP_DIRS})$"; then
+    continue
+  fi
+  while IFS= read -r -d '' file; do
+    filename="$(basename "$file")"
+    if echo "$filename" | grep -qE "^(${SKIP_FILES})$"; then
+      continue
+    fi
+    if has_publish_true "$file"; then
+      rel_path="${file#$VAULT/}"
+      echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
+    fi
+  done < <(find "$dir" -type f -name '*.md' -print0)
+done < <(find "$VAULT" -maxdepth 1 -mindepth 1 -type d -print0)
+
+while IFS= read -r -d '' file; do
+  filename="$(basename "$file")"
+  if echo "$filename" | grep -qE "^(${SKIP_FILES})$"; then
+    continue
+  fi
+  if has_publish_true "$file"; then
+    rel_path="${file#$VAULT/}"
+    echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
+  fi
+done < <(find "$VAULT" -maxdepth 1 -type f -name '*.md' -print0)
+
+note_count=$(wc -l < "$PUBLISH_LIST" | tr -d ' ')
+echo "Found $note_count publishable note(s)"
+
+copied=0
+skipped=0
+removed=0
+
+while IFS='|' read -r rel_path vault_file; do
+  [ -z "$rel_path" ] && continue
+  dest="$CONTENT/$rel_path"
+
+  if is_newer "$vault_file" "$dest"; then
+    copy_with_dates "$vault_file" "$dest"
+    copied=$((copied + 1))
+  else
+    skipped=$((skipped + 1))
+  fi
+done < "$PUBLISH_LIST"
+
+while IFS= read -r -d '' content_file; do
+  rel_path="${content_file#$CONTENT/}"
+
+  case "$rel_path" in
+    Attachments/*|.gitkeep) continue ;;
+  esac
+
+  if ! grep -q "^${rel_path}|" "$PUBLISH_LIST" 2>/dev/null; then
+    rm "$content_file"
+    removed=$((removed + 1))
+  fi
+done < <(find "$CONTENT" -type f -name '*.md' -print0)
+
+find "$CONTENT" -mindepth 1 -type d -empty -not -name 'Attachments' -delete 2>/dev/null || true
+
+echo "Notes: $copied copied, $skipped unchanged, $removed removed"
+
+while IFS= read -r -d '' note; do
+  grep -oE "\!\[\[[^]]+\.(${IMAGE_EXT})\]\]" "$note" 2>/dev/null \
+    | sed -E 's/!\[\[(.+)\]\]/\1/' \
+    | xargs -I{} basename "{}" >> "$IMAGE_REF_LIST" || true
+
+  grep -oE "\!\[[^]]*\]\([^)]+\.(${IMAGE_EXT})\)" "$note" 2>/dev/null \
+    | sed -E 's/!\[[^]]*\]\((.+)\)/\1/' \
+    | xargs -I{} basename "{}" >> "$IMAGE_REF_LIST" || true
+done < <(find "$CONTENT" -type f -name '*.md' -print0)
+
+if [ -f "$IMAGE_REF_LIST" ]; then
+  sort -u "$IMAGE_REF_LIST" -o "$IMAGE_REF_LIST"
+fi
+
+img_count=$(wc -l < "$IMAGE_REF_LIST" | tr -d ' ')
+echo "Found $img_count unique image reference(s)"
+
+img_copied=0
+img_skipped=0
+img_missing=0
+
+if [ "$img_count" -gt 0 ]; then
+  mkdir -p "$ATTACHMENTS"
+
+  while IFS= read -r img_name; do
+    [ -z "$img_name" ] && continue
+    dest="$ATTACHMENTS/$img_name"
+
+    vault_img=""
+    if [ -f "$RESOURCES_DIR/$img_name" ]; then
+      vault_img="$RESOURCES_DIR/$img_name"
+    else
+      vault_img="$(find "$VAULT" -type f -name "$img_name" -not -path "*/.obsidian/*" -print -quit 2>/dev/null)" || true
+    fi
+
+    if [ -n "$vault_img" ]; then
+      if is_newer "$vault_img" "$dest"; then
+        cp "$vault_img" "$dest"
+        img_copied=$((img_copied + 1))
+      else
+        img_skipped=$((img_skipped + 1))
+      fi
+    else
+      echo "  Warning: referenced image not found in vault: $img_name"
+      img_missing=$((img_missing + 1))
+    fi
+  done < "$IMAGE_REF_LIST"
+fi
+
+img_removed=0
+if [ -d "$ATTACHMENTS" ]; then
+  while IFS= read -r -d '' img_file; do
+    img_name="$(basename "$img_file")"
+    if ! grep -qx "$img_name" "$IMAGE_REF_LIST" 2>/dev/null; then
+      rm "$img_file"
+      img_removed=$((img_removed + 1))
+    fi
+  done < <(find "$ATTACHMENTS" -type f -print0)
+
+  rmdir "$ATTACHMENTS" 2>/dev/null || true
+fi
+
+echo "Images: $img_copied copied, $img_skipped unchanged, $img_removed removed, $img_missing missing"
+
+cd "$QUARTZ"
+
+git add content/
+
+if git diff --cached --quiet; then
+  echo "No changes to publish — exiting."
+  exit 0
+fi
+
+timestamp=$(date '+%Y-%m-%d %H:%M')
+git commit -m "publish: $timestamp"
+git push origin v4
+
+echo "Published and pushed at $timestamp"
