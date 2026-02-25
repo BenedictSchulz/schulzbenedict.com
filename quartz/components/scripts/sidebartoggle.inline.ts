@@ -7,6 +7,5 @@ document.addEventListener("nav", () => {
     window.addCleanup(() => toggleButton.removeEventListener("click", toggle))
   }
 
-  // Reset sidebar state on navigation
   document.body.classList.remove("show-sidebar")
 })

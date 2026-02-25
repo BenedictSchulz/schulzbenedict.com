@@ -26,6 +26,7 @@ import ConditionalRender from "./ConditionalRender"
 import RelatedLabel from "./RelatedLabel"
 import SidebarToggle from "./SidebarToggle"
 import MobileGraph from "./MobileGraph"
+import HomeLink from "./HomeLink"
 
 export {
   ArticleTitle,
@@ -56,4 +57,5 @@ export {
   RelatedLabel,
   SidebarToggle,
   MobileGraph,
+  HomeLink,
 }

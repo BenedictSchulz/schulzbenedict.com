@@ -5,6 +5,7 @@ import * as Component from "./quartz/components"
 export const sharedPageComponents: SharedLayout = {
   head: Component.Head(),
   header: [
+    Component.HomeLink(),
     Component.Search(),
     Component.Darkmode(),
     Component.SidebarToggle(),
@@ -21,15 +22,27 @@ export const sharedPageComponents: SharedLayout = {
     }),
     Component.ConditionalRender({
       component: Component.RelatedLabel(),
-      condition: (page) => page.fileData.slug !== "index" && page.fileData.slug !== "impressum" && page.fileData.slug !== "datenschutz" && page.fileData.slug !== "404",
+      condition: (page) =>
+        page.fileData.slug !== "index" &&
+        page.fileData.slug !== "impressum" &&
+        page.fileData.slug !== "datenschutz" &&
+        page.fileData.slug !== "404",
     }),
     Component.ConditionalRender({
       component: Component.MobileGraph(),
-      condition: (page) => page.fileData.slug !== "index" && page.fileData.slug !== "impressum" && page.fileData.slug !== "datenschutz" && page.fileData.slug !== "404",
+      condition: (page) =>
+        page.fileData.slug !== "index" &&
+        page.fileData.slug !== "impressum" &&
+        page.fileData.slug !== "datenschutz" &&
+        page.fileData.slug !== "404",
     }),
     Component.ConditionalRender({
       component: Component.Backlinks(),
-      condition: (page) => page.fileData.slug !== "index" && page.fileData.slug !== "impressum" && page.fileData.slug !== "datenschutz" && page.fileData.slug !== "404",
+      condition: (page) =>
+        page.fileData.slug !== "index" &&
+        page.fileData.slug !== "impressum" &&
+        page.fileData.slug !== "datenschutz" &&
+        page.fileData.slug !== "404",
     }),
   ],
   footer: Component.Footer({
@@ -42,12 +55,7 @@ export const sharedPageComponents: SharedLayout = {
 
 // components for pages that display a single page (e.g. a single note)
 export const defaultContentPageLayout: PageLayout = {
-  beforeBody: [
-    Component.ArticleTitle(),
-    Component.ContentMeta(),
-    Component.TagList(),
-
-  ],
+  beforeBody: [Component.ArticleTitle(), Component.ContentMeta(), Component.TagList()],
   left: [],
   right: [
     Component.Graph(),

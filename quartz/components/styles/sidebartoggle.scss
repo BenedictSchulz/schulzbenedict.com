@@ -9,6 +9,11 @@
   margin: 0;
   text-align: inherit;
   flex-shrink: 0;
+  display: none;
+
+  @media all and (min-width: 801px) {
+    display: block;
+  }
 
   & svg {
     position: absolute;
@@ -22,14 +27,8 @@
     stroke-linejoin: round;
     transition: opacity 0.2s ease;
   }
-
-  // Hide on mobile — graph is inline there
-  @media all and (max-width: 900px) {
-    display: none !important;
-  }
 }
 
-// Hide on pages without sidebar
 body[data-slug="impressum"] .sidebar-toggle,
 body[data-slug="datenschutz"] .sidebar-toggle {
   display: none !important;
