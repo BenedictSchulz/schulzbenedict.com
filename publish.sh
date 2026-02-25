@@ -7,8 +7,8 @@ CONTENT="$QUARTZ/content"
 ATTACHMENTS="$CONTENT/Attachments"
 RESOURCES_DIR="$VAULT/90 Sources/Resources"
 
-PUBLISH_DIRS="10 Lectures|20 Notes|30 MOCs"
-SKIP_DIRS="00 Inbox|01 Daily Notes|99 Templates|.obsidian"
+NOTES_DIR="20 Notes"
+SKIP_DIRS="00 Inbox|01 Daily Notes|10 Lectures|30 MOCs|99 Templates|.obsidian"
 SKIP_FILES="impressum.md|datenschutz.md"
 IMAGE_EXT="png|jpg|jpeg|gif|svg|webp|pdf"
 
@@ -132,23 +132,20 @@ if [ ! -d "$QUARTZ" ]; then
   exit 1
 fi
 
-IFS='|' read -ra PD_ARR <<< "$PUBLISH_DIRS"
-for dir in "${PD_ARR[@]}"; do
-  if [ -d "$VAULT/$dir" ]; then
-    while IFS= read -r -d '' file; do
-      filename="$(basename "$file")"
-      if echo "$filename" | grep -qE "^(${SKIP_FILES})$"; then
-        continue
-      fi
-      rel_path="${file#$VAULT/}"
-      echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
-    done < <(find "$VAULT/$dir" -type f -name '*.md' -print0)
-  fi
-done
+if [ -d "$VAULT/$NOTES_DIR" ]; then
+  while IFS= read -r -d '' file; do
+    filename="$(basename "$file")"
+    if echo "$filename" | grep -qE "^(${SKIP_FILES})$"; then
+      continue
+    fi
+    rel_path="${file#$VAULT/$NOTES_DIR/}"
+    echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
+  done < <(find "$VAULT/$NOTES_DIR" -type f -name '*.md' -print0)
+fi
 
 while IFS= read -r -d '' dir; do
   dirname="$(basename "$dir")"
-  if echo "$dirname" | grep -qE "^(${PUBLISH_DIRS}|${SKIP_DIRS})$"; then
+  if [ "$dirname" = "$NOTES_DIR" ] || echo "$dirname" | grep -qE "^(${SKIP_DIRS})$"; then
     continue
   fi
   while IFS= read -r -d '' file; do

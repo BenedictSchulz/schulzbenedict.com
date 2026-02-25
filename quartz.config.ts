@@ -15,14 +15,7 @@ const config: QuartzConfig = {
     analytics: null,
     locale: "en-US",
     baseUrl: "schulzbenedict.com",
-    ignorePatterns: [
-      "private",
-      "templates",
-      ".obsidian",
-      "00 Inbox",
-      "01 Daily Notes",
-      "99 Templates",
-    ],
+    ignorePatterns: ["private", "templates", ".obsidian"],
     defaultDateType: "modified",
     theme: {
       fontOrigin: "googleFonts",
