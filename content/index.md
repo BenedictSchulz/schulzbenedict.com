@@ -12,4 +12,4 @@ I'm curious about how the brain works, how that maps onto our everyday thinking 
 
 This is my digital garden. Notes on what I'm learning and thinking about, in English and German. Different topics feel like different languages to me. Most of it's unfinished, and when the day comes that it is, it will be a sad one for me.
 
-<div style="text-align:center; margin-top:2rem"><span style="color:var(--secondary)">benedict [at] schulzbenedict [dot] com</span> &nbsp;&nbsp;·&nbsp;&nbsp; <a href="https://github.com/BenedictSchulz">github.com</a></div>
+<div style="text-align:center; margin-top:2rem"><span style="color:var(--secondary)">benedict [at] schulzbenedict.com</span> &nbsp;&nbsp;·&nbsp;&nbsp; <a href="https://github.com/BenedictSchulz">github.com</a></div>
