@@ -2,7 +2,7 @@
 set -euo pipefail
 
 VAULT="$HOME/vault_obsidian"
-QUARTZ="$HOME/workspace/github.com/BenedictSchulz/quartz"
+QUARTZ="$HOME/workspace/github.com/BenedictSchulz/schulzbenedict.com"
 CONTENT="$QUARTZ/content"
 ATTACHMENTS="$CONTENT/Attachments"
 RESOURCES_DIR="$VAULT/90 Sources/Resources"
