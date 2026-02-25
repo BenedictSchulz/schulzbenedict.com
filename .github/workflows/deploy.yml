@@ -24,13 +24,19 @@ jobs:
         run: npm ci
 
       - name: Inject legal pages from templates
+        env:
+          IMPRESSUM_NAME: ${{ secrets.IMPRESSUM_NAME }}
+          IMPRESSUM_ADDRESS: ${{ secrets.IMPRESSUM_ADDRESS }}
+          IMPRESSUM_CITY: ${{ secrets.IMPRESSUM_CITY }}
+          IMPRESSUM_EMAIL: ${{ secrets.IMPRESSUM_EMAIL }}
         run: |
           for f in legal/*.md; do
-            sed -e "s|{{IMPRESSUM_NAME}}|${{ secrets.IMPRESSUM_NAME }}|g" \
-                -e "s|{{IMPRESSUM_ADDRESS}}|${{ secrets.IMPRESSUM_ADDRESS }}|g" \
-                -e "s|{{IMPRESSUM_CITY}}|${{ secrets.IMPRESSUM_CITY }}|g" \
-                -e "s|{{IMPRESSUM_EMAIL}}|${{ secrets.IMPRESSUM_EMAIL }}|g" \
-                "$f" > "content/$(basename "$f")"
+            content=$(<"$f")
+            content="${content//\{\{IMPRESSUM_NAME\}\}/$IMPRESSUM_NAME}"
+            content="${content//\{\{IMPRESSUM_ADDRESS\}\}/$IMPRESSUM_ADDRESS}"
+            content="${content//\{\{IMPRESSUM_CITY\}\}/$IMPRESSUM_CITY}"
+            content="${content//\{\{IMPRESSUM_EMAIL\}\}/$IMPRESSUM_EMAIL}"
+            printf '%s\n' "$content" > "content/$(basename "$f")"
           done
 
       - name: Build Quartz
