@@ -1,9 +1,9 @@
 ---
 title: Benedict Schulz
 publish: true
-created: 2026-02-25
+created: 2026-02-27
 modified: 2026-02-27
-published: 2026-02-25
+published: 2026-02-27
 ---
 
 Hi, I'm Benedict. Math and I had a complicated relationship but I always liked building things, so I ended up studying computer science.
