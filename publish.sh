@@ -184,6 +184,7 @@ while IFS='|' read -r rel_path vault_file; do
 
   if is_newer "$vault_file" "$dest"; then
     copy_with_dates "$vault_file" "$dest"
+    touch -r "$vault_file" "$dest"
     copied=$((copied + 1))
   else
     skipped=$((skipped + 1))
