@@ -25,11 +25,6 @@ body[data-slug="datenschutz"] .sidebar.right > * {
   display: none !important;
 }
 
-// On index page, show sidebar (Explorer) but hide graph
-body.show-sidebar[data-slug="index"] .sidebar.right .graph {
-  display: none !important;
-}
-
 // ============================================================
 // HEADER — search + darkmode icons, right-aligned
 // ============================================================

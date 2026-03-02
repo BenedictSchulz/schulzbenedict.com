@@ -31,7 +31,6 @@ export const sharedPageComponents: SharedLayout = {
     Component.ConditionalRender({
       component: Component.MobileGraph(),
       condition: (page) =>
-        page.fileData.slug !== "index" &&
         page.fileData.slug !== "impressum" &&
         page.fileData.slug !== "datenschutz" &&
         page.fileData.slug !== "404",
