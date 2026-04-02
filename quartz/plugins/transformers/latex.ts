@@ -23,13 +23,25 @@ interface MacroType {
   [key: string]: string | Args[]
 }
 
+function remarkObsidianDisplayMath() {
+  return (_tree: any, file: any) => {
+    const src = String(file.value)
+    file.value = src.replace(
+      /^(\s*)\$\$(.+)\$\$\s*$/gm,
+      (_match: string, indent: string, content: string) => {
+        return `${indent}$$\n${indent}${content}\n${indent}$$`
+      },
+    )
+  }
+}
+
 export const Latex: QuartzTransformerPlugin<Partial<Options>> = (opts) => {
   const engine = opts?.renderEngine ?? "katex"
   const macros = opts?.customMacros ?? {}
   return {
     name: "Latex",
     markdownPlugins() {
-      return [remarkMath]
+      return [remarkObsidianDisplayMath, remarkMath]
     },
     htmlPlugins() {
       switch (engine) {
