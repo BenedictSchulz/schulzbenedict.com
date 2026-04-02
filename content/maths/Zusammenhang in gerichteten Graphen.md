@@ -4,7 +4,7 @@ modified: 2026-02-13
 published: 2026-04-01
 ---
 
-#graphentheorie 
+#graphentheorie
 
 > Die Begriffe **stark** und **schwach zusammenhängend** existieren nur für **gerichtete Graphen** (Digraphen).  
 > Bei ungerichteten Graphen spricht man einfach von _zusammenhängend_ oder _nicht zusammenhängend_.
@@ -24,11 +24,17 @@ gibt. Die **Richtung der Kanten wird beachtet**.
 
 ### Beispiel
 
-$$G = (V, E)$$
+$$
+G = (V, E)
+$$
 
-$$V = {A, B, C, D}$$
+$$
+V = {A, B, C, D}
+$$
 
-$$E = {(A, B),; (B, D),; (D, C),; (C, A)}$$
+$$
+E = {(A, B),; (B, D),; (D, C),; (C, A)}
+$$
 
 ```
 A → B
@@ -52,11 +58,17 @@ Das bedeutet: Ersetzt man jede gerichtete Kante $(u, v) \in E$ durch eine ungeri
 
 ### Beispiel
 
-$$G = (V, E)$$
+$$
+G = (V, E)
+$$
 
-$$V = {A, B, C, D}$$
+$$
+V = {A, B, C, D}
+$$
 
-$$E = {(A, B),; (B, C),; (C, D)}$$
+$$
+E = {(A, B),; (B, C),; (C, D)}
+$$
 
 ```
 A → B → C → D
@@ -68,11 +80,13 @@ A → B → C → D
 
 ## Zusammenfassung
 
-|Eigenschaft|Richtung beachten?|Bedingung|
-|---|---|---|
-|**Stark zusammenhängend**|Ja|$\forall; u, v \in V$: es existiert ein gerichteter Pfad $u \leadsto v$ **und** $v \leadsto u$|
-|**Schwach zusammenhängend**|Nein|Der zugrunde liegende ungerichtete Graph ist zusammenhängend|
+| Eigenschaft                 | Richtung beachten? | Bedingung                                                                                      |
+| --------------------------- | ------------------ | ---------------------------------------------------------------------------------------------- |
+| **Stark zusammenhängend**   | Ja                 | $\forall; u, v \in V$: es existiert ein gerichteter Pfad $u \leadsto v$ **und** $v \leadsto u$ |
+| **Schwach zusammenhängend** | Nein               | Der zugrunde liegende ungerichtete Graph ist zusammenhängend                                   |
 
-$$\text{stark zusammenhängend} \implies \text{schwach zusammenhängend}$$
+$$
+\text{stark zusammenhängend} \implies \text{schwach zusammenhängend}
+$$
 
 Die Umkehrung gilt **nicht**.
