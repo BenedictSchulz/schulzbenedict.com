@@ -279,8 +279,11 @@ export const ObsidianFlavoredMarkdown: QuartzTransformerPlugin<Partial<Options>>
 
                 // treat as broken link if slug not in ctx.allSlugs
                 if (opts.disableBrokenWikilinks) {
-                  const slug = slugifyFilePath(fp as FilePath)
-                  const exists = ctx.allSlugs && ctx.allSlugs.includes(slug)
+                  const target = slugifyFilePath(fp as FilePath)
+                  const exists = ctx.allSlugs?.some((slug) => {
+                    const fileName = slug.split("/").at(-1)
+                    return target === fileName || target === slug
+                  })
                   if (!exists) {
                     return {
                       type: "html",
