@@ -581,7 +581,9 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
     cleanupLocalGraphs()
     const localGraphContainers = document.getElementsByClassName("graph-container")
     for (const container of localGraphContainers) {
-      localGraphCleanups.push(await renderGraph(container as HTMLElement, slug))
+      if ((container as HTMLElement).offsetWidth > 0) {
+        localGraphCleanups.push(await renderGraph(container as HTMLElement, slug))
+      }
     }
   }
 
@@ -590,9 +592,23 @@ document.addEventListener("nav", async (e: CustomEventMap["nav"]) => {
     void renderLocalGraph()
   }
 
+  const resizeObserver = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+      if (entry.contentRect.width > 0 && localGraphCleanups.length === 0) {
+        void renderLocalGraph()
+      }
+    }
+  })
+
+  const localGraphContainers = document.getElementsByClassName("graph-container")
+  for (const container of localGraphContainers) {
+    resizeObserver.observe(container)
+  }
+
   document.addEventListener("themechange", handleThemeChange)
   window.addCleanup(() => {
     document.removeEventListener("themechange", handleThemeChange)
+    resizeObserver.disconnect()
   })
 
   const containers = [...document.getElementsByClassName("global-graph-outer")] as HTMLElement[]
