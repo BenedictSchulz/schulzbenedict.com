@@ -1,12 +1,12 @@
 ---
 created: 2026-03-26
-modified: 2026-03-26
+modified: 2026-04-03
 published: 2026-04-01
 ---
 
 #graphentheorie 
 
-Ein [[Zykel (Zyklus) bei einem Graphen|| Zyklus] ] (geschlossener Kantenzug), bei dem kein Knoten doppelt vorkommt, außer dass Start = Ende.
+Ein [[Zykel (Zyklus) bei einem Graphen | Zyklus]] (geschlossener Kantenzug), bei dem kein Knoten doppelt vorkommt, außer dass Start = Ende.
 
 
 Beispiel:

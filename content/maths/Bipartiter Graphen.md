@@ -1,6 +1,6 @@
 ---
 created: 2026-03-26
-modified: 2026-03-26
+modified: 2026-04-03
 published: 2026-04-01
 ---
 
@@ -14,7 +14,7 @@ published: 2026-04-01
 - Umgekehrt: Wenn ein Graph 2-färbbar ist, dann ist er bipartit
 
 - **Jeder Baum** (kreisfreier Graph) **ist bipartit** (Korollar 3.3)
-- Ein Graph ist **genau dann nicht bipartit**, wenn er einen **[[Kreis bei einem Graphen|| Kreis]] ungerader Länge** enthält
+- Ein Graph ist **genau dann nicht bipartit**, wenn er einen **[[Kreis bei einem Graphen | Kreis]] ungerader Länge** enthält
 
 ## Test
 Man färbt einen Knoten mit Farbe 1, dessen Nachbarn mit Farbe 2, deren Nachbarn wieder mit Farbe 1 usw. Stößt man auf einen Knoten, der schon die „falsche" Farbe hat → nicht bipartit → Kreis ungerader Länge gefunden.
