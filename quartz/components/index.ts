@@ -25,7 +25,6 @@ import Flex from "./Flex"
 import ConditionalRender from "./ConditionalRender"
 import SidebarToggle from "./SidebarToggle"
 import HomeLink from "./HomeLink"
-import HomeSections from "./HomeSections"
 
 export {
   ArticleTitle,
@@ -55,5 +54,4 @@ export {
   ConditionalRender,
   SidebarToggle,
   HomeLink,
-  HomeSections,
 }

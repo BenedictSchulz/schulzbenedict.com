@@ -12,19 +12,6 @@ export const sharedPageComponents: SharedLayout = {
   ],
   afterBody: [
     Component.ConditionalRender({
-      component: Component.HomeSections(),
-      condition: (page) => page.fileData.slug === "index",
-    }),
-    Component.ConditionalRender({
-      component: Component.RecentNotes({
-        title: "Recent Notes",
-        limit: 6,
-        showTags: false,
-        filter: (f) => f.slug !== "index" && f.slug !== "impressum" && f.slug !== "datenschutz",
-      }),
-      condition: (page) => page.fileData.slug === "index",
-    }),
-    Component.ConditionalRender({
       component: Component.Backlinks({ hideWhenEmpty: true }),
       condition: (page) =>
         page.fileData.slug !== "index" &&
@@ -58,6 +45,15 @@ export const defaultContentPageLayout: PageLayout = {
         filterFn: (node) => node.slugSegment !== "impressum" && node.slugSegment !== "datenschutz",
       }),
       condition: (page) => page.fileData.slug !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.Explorer({
+        title: "Browse",
+        folderClickBehavior: "link",
+        folderDefaultState: "open",
+        filterFn: (node) => node.slugSegment !== "impressum" && node.slugSegment !== "datenschutz",
+      }),
+      condition: (page) => page.fileData.slug === "index",
     }),
   ],
 }
