@@ -1,20 +1,73 @@
 #!/bin/bash
 set -euo pipefail
 
-VAULT="$HOME/vault_obsidian"
-QUARTZ="$HOME/workspace/github.com/BenedictSchulz/schulzbenedict.com"
-CONTENT="$QUARTZ/content"
-ATTACHMENTS="$CONTENT/Attachments"
-RESOURCES_DIR="$VAULT/90 Sources/Resources"
+SCRIPT_DIR="$(cd -- "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_DIR="$SCRIPT_DIR"
 
-NOTES_DIR="20 Notes"
+# shellcheck disable=SC1091
+source "$REPO_DIR/scripts/legal-pages.sh"
+
+load_env_file "$REPO_DIR/.env"
+
+VAULT_PATH="${VAULT_PATH:-$HOME/vault_obsidian}"
+NOTES_DIR="${NOTES_DIR:-20 Notes}"
+RESOURCES_DIR="${RESOURCES_DIR:-$VAULT_PATH/90 Sources/Resources}"
+PUBLISH_BRANCH="${PUBLISH_BRANCH:-v4}"
+CONTENT_DIR="$REPO_DIR/content"
+ATTACHMENTS_DIR="$CONTENT_DIR/Attachments"
 SKIP_DIRS="00 Inbox|01 Daily Notes|10 Lectures|30 MOCs|99 Templates|.obsidian"
 SKIP_FILES="impressum.md|datenschutz.md"
 IMAGE_EXT="png|jpg|jpeg|gif|svg|webp|pdf"
 
+DRY_RUN=0
+NO_PUSH=0
+
+usage() {
+  cat <<'EOF'
+Usage: ./publish.sh [--dry-run] [--no-push]
+
+  --dry-run  Sync and validate without committing or pushing.
+  --no-push  Commit locally but skip the push step.
+EOF
+}
+
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --dry-run)
+      DRY_RUN=1
+      ;;
+    --no-push)
+      NO_PUSH=1
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      echo "Error: unknown option '$1'" >&2
+      usage >&2
+      exit 1
+      ;;
+  esac
+  shift
+done
+
 PUBLISH_LIST=$(mktemp)
+PUBLISH_PATH_LIST=$(mktemp)
 IMAGE_REF_LIST=$(mktemp)
-trap 'rm -f "$PUBLISH_LIST" "$IMAGE_REF_LIST"' EXIT
+cleanup() {
+  cleanup_legal_pages "$REPO_DIR"
+  rm -f "$PUBLISH_LIST" "$PUBLISH_PATH_LIST" "$IMAGE_REF_LIST"
+}
+trap cleanup EXIT
+
+record_publish_file() {
+  local rel_path="$1"
+  local source_file="$2"
+
+  printf "%s|%s\n" "$rel_path" "$source_file" >> "$PUBLISH_LIST"
+  printf "%s\n" "$rel_path" >> "$PUBLISH_PATH_LIST"
+}
 
 has_publish_true() {
   awk '/^---$/ { if (++c == 2) exit } c == 1 { print }' "$1" \
@@ -117,30 +170,30 @@ copy_with_dates() {
   fi
 }
 
-if [ -L "$CONTENT" ]; then
-  echo "Error: $CONTENT is a symlink. Refusing to operate."
+if [ -L "$CONTENT_DIR" ]; then
+  echo "Error: $CONTENT_DIR is a symlink. Refusing to operate."
   exit 1
 fi
 
-if [ ! -d "$VAULT" ]; then
-  echo "Error: Vault not found at $VAULT"
+if [ ! -d "$CONTENT_DIR" ]; then
+  echo "Error: content directory not found at $CONTENT_DIR"
   exit 1
 fi
 
-if [ ! -d "$QUARTZ" ]; then
-  echo "Error: Quartz repo not found at $QUARTZ"
+if [ ! -d "$VAULT_PATH" ]; then
+  echo "Error: Vault not found at $VAULT_PATH"
   exit 1
 fi
 
-if [ -d "$VAULT/$NOTES_DIR" ]; then
+if [ -d "$VAULT_PATH/$NOTES_DIR" ]; then
   while IFS= read -r -d '' file; do
     filename="$(basename "$file")"
     if echo "$filename" | grep -qE "^(${SKIP_FILES})$"; then
       continue
     fi
-    rel_path="${file#$VAULT/$NOTES_DIR/}"
-    echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
-  done < <(find "$VAULT/$NOTES_DIR" -type f -name '*.md' -print0)
+    rel_path="${file#$VAULT_PATH/$NOTES_DIR/}"
+    record_publish_file "$rel_path" "$file"
+  done < <(find "$VAULT_PATH/$NOTES_DIR" -type f -name '*.md' -print0)
 fi
 
 while IFS= read -r -d '' dir; do
@@ -154,11 +207,11 @@ while IFS= read -r -d '' dir; do
       continue
     fi
     if has_publish_true "$file"; then
-      rel_path="${file#$VAULT/}"
-      echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
+      rel_path="${file#$VAULT_PATH/}"
+      record_publish_file "$rel_path" "$file"
     fi
   done < <(find "$dir" -type f -name '*.md' -print0)
-done < <(find "$VAULT" -maxdepth 1 -mindepth 1 -type d -print0)
+done < <(find "$VAULT_PATH" -maxdepth 1 -mindepth 1 -type d -print0)
 
 while IFS= read -r -d '' file; do
   filename="$(basename "$file")"
@@ -166,10 +219,12 @@ while IFS= read -r -d '' file; do
     continue
   fi
   if has_publish_true "$file"; then
-    rel_path="${file#$VAULT/}"
-    echo "${rel_path}|${file}" >> "$PUBLISH_LIST"
+    rel_path="${file#$VAULT_PATH/}"
+    record_publish_file "$rel_path" "$file"
   fi
-done < <(find "$VAULT" -maxdepth 1 -type f -name '*.md' -print0)
+done < <(find "$VAULT_PATH" -maxdepth 1 -type f -name '*.md' -print0)
+
+sort -u "$PUBLISH_PATH_LIST" -o "$PUBLISH_PATH_LIST"
 
 note_count=$(wc -l < "$PUBLISH_LIST" | tr -d ' ')
 echo "Found $note_count publishable note(s)"
@@ -180,7 +235,7 @@ removed=0
 
 while IFS='|' read -r rel_path vault_file; do
   [ -z "$rel_path" ] && continue
-  dest="$CONTENT/$rel_path"
+  dest="$CONTENT_DIR/$rel_path"
 
   if is_newer "$vault_file" "$dest"; then
     copy_with_dates "$vault_file" "$dest"
@@ -192,19 +247,19 @@ while IFS='|' read -r rel_path vault_file; do
 done < "$PUBLISH_LIST"
 
 while IFS= read -r -d '' content_file; do
-  rel_path="${content_file#$CONTENT/}"
+  rel_path="${content_file#$CONTENT_DIR/}"
 
   case "$rel_path" in
     Attachments/*|.gitkeep) continue ;;
   esac
 
-  if ! grep -q "^${rel_path}|" "$PUBLISH_LIST" 2>/dev/null; then
+  if ! grep -Fqx "$rel_path" "$PUBLISH_PATH_LIST" 2>/dev/null; then
     rm "$content_file"
     removed=$((removed + 1))
   fi
-done < <(find "$CONTENT" -type f -name '*.md' -print0)
+done < <(find "$CONTENT_DIR" -type f -name '*.md' -print0)
 
-find "$CONTENT" -mindepth 1 -type d -empty -not -name 'Attachments' -delete 2>/dev/null || true
+find "$CONTENT_DIR" -mindepth 1 -type d -empty -not -name 'Attachments' -delete 2>/dev/null || true
 
 echo "Notes: $copied copied, $skipped unchanged, $removed removed"
 
@@ -216,7 +271,7 @@ while IFS= read -r -d '' note; do
   grep -oE "\!\[[^]]*\]\([^)]+\.(${IMAGE_EXT})\)" "$note" 2>/dev/null \
     | sed -E 's/!\[[^]]*\]\((.+)\)/\1/' \
     | xargs -I{} basename "{}" >> "$IMAGE_REF_LIST" || true
-done < <(find "$CONTENT" -type f -name '*.md' -print0)
+done < <(find "$CONTENT_DIR" -type f -name '*.md' -print0)
 
 if [ -f "$IMAGE_REF_LIST" ]; then
   sort -u "$IMAGE_REF_LIST" -o "$IMAGE_REF_LIST"
@@ -230,17 +285,17 @@ img_skipped=0
 img_missing=0
 
 if [ "$img_count" -gt 0 ]; then
-  mkdir -p "$ATTACHMENTS"
+  mkdir -p "$ATTACHMENTS_DIR"
 
   while IFS= read -r img_name; do
     [ -z "$img_name" ] && continue
-    dest="$ATTACHMENTS/$img_name"
+    dest="$ATTACHMENTS_DIR/$img_name"
 
     vault_img=""
     if [ -f "$RESOURCES_DIR/$img_name" ]; then
       vault_img="$RESOURCES_DIR/$img_name"
     else
-      vault_img="$(find "$VAULT" -type f -name "$img_name" -not -path "*/.obsidian/*" -print -quit 2>/dev/null)" || true
+      vault_img="$(find "$VAULT_PATH" -type f -name "$img_name" -not -path "*/.obsidian/*" -print -quit 2>/dev/null)" || true
     fi
 
     if [ -n "$vault_img" ]; then
@@ -258,21 +313,31 @@ if [ "$img_count" -gt 0 ]; then
 fi
 
 img_removed=0
-if [ -d "$ATTACHMENTS" ]; then
+if [ -d "$ATTACHMENTS_DIR" ]; then
   while IFS= read -r -d '' img_file; do
     img_name="$(basename "$img_file")"
     if ! grep -qx "$img_name" "$IMAGE_REF_LIST" 2>/dev/null; then
       rm "$img_file"
       img_removed=$((img_removed + 1))
     fi
-  done < <(find "$ATTACHMENTS" -type f -print0)
+  done < <(find "$ATTACHMENTS_DIR" -type f -print0)
 
-  rmdir "$ATTACHMENTS" 2>/dev/null || true
+  rmdir "$ATTACHMENTS_DIR" 2>/dev/null || true
 fi
 
 echo "Images: $img_copied copied, $img_skipped unchanged, $img_removed removed, $img_missing missing"
 
-cd "$QUARTZ"
+generate_legal_pages "$REPO_DIR"
+
+echo "Running checks"
+npm run check
+
+echo "Building site"
+npm run build
+
+cleanup_legal_pages "$REPO_DIR"
+
+cd "$REPO_DIR"
 
 git add content/
 
@@ -281,8 +346,22 @@ if git diff --cached --quiet; then
   exit 0
 fi
 
+if [ "$DRY_RUN" -eq 1 ]; then
+  echo "Dry run complete. Staged content diff:"
+  git diff --cached --stat
+  git reset --quiet HEAD -- content/
+  echo "Dry run finished without commit or push."
+  exit 0
+fi
+
 timestamp=$(date '+%Y-%m-%d %H:%M')
 git commit -m "publish: $timestamp"
-git push origin v4
+
+if [ "$NO_PUSH" -eq 1 ]; then
+  echo "Committed locally at $timestamp (push skipped)."
+  exit 0
+fi
+
+git push origin "HEAD:${PUBLISH_BRANCH}"
 
 echo "Published and pushed at $timestamp"

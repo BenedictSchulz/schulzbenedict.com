@@ -4,7 +4,7 @@ modified: 2026-02-18
 published: 2026-04-01
 ---
 
-#graphentheorie 
+#graphentheorie
 
 Ein Pfad, bei dem Startknoten gleich Endknoten ist: $v_{0} = v_{k}$.
 

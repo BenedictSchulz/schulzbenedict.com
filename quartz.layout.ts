@@ -12,31 +12,20 @@ export const sharedPageComponents: SharedLayout = {
   ],
   afterBody: [
     Component.ConditionalRender({
+      component: Component.HomeSections(),
+      condition: (page) => page.fileData.slug === "index",
+    }),
+    Component.ConditionalRender({
       component: Component.RecentNotes({
         title: "Recent Notes",
-        limit: 100,
+        limit: 6,
         showTags: false,
         filter: (f) => f.slug !== "index" && f.slug !== "impressum" && f.slug !== "datenschutz",
       }),
       condition: (page) => page.fileData.slug === "index",
     }),
     Component.ConditionalRender({
-      component: Component.RelatedLabel(),
-      condition: (page) =>
-        page.fileData.slug !== "index" &&
-        page.fileData.slug !== "impressum" &&
-        page.fileData.slug !== "datenschutz" &&
-        page.fileData.slug !== "404",
-    }),
-    Component.ConditionalRender({
-      component: Component.MobileGraph(),
-      condition: (page) =>
-        page.fileData.slug !== "impressum" &&
-        page.fileData.slug !== "datenschutz" &&
-        page.fileData.slug !== "404",
-    }),
-    Component.ConditionalRender({
-      component: Component.Backlinks(),
+      component: Component.Backlinks({ hideWhenEmpty: true }),
       condition: (page) =>
         page.fileData.slug !== "index" &&
         page.fileData.slug !== "impressum" &&
@@ -57,12 +46,18 @@ export const defaultContentPageLayout: PageLayout = {
   beforeBody: [Component.ArticleTitle(), Component.ContentMeta(), Component.TagList()],
   left: [],
   right: [
-    Component.Graph(),
-    Component.Explorer({
-      title: "Folders",
-      folderClickBehavior: "link",
-      folderDefaultState: "collapsed",
-      filterFn: (node) => node.slugSegment !== "impressum" && node.slugSegment !== "datenschutz",
+    Component.ConditionalRender({
+      component: Component.Graph(),
+      condition: (page) => page.fileData.slug !== "index",
+    }),
+    Component.ConditionalRender({
+      component: Component.Explorer({
+        title: "Browse",
+        folderClickBehavior: "link",
+        folderDefaultState: "collapsed",
+        filterFn: (node) => node.slugSegment !== "impressum" && node.slugSegment !== "datenschutz",
+      }),
+      condition: (page) => page.fileData.slug !== "index",
     }),
   ],
 }
@@ -74,7 +69,7 @@ export const defaultListPageLayout: PageLayout = {
   right: [
     Component.Graph(),
     Component.Explorer({
-      title: "Folders",
+      title: "Browse",
       folderClickBehavior: "link",
       folderDefaultState: "collapsed",
       filterFn: (node) => node.slugSegment !== "impressum" && node.slugSegment !== "datenschutz",

@@ -4,7 +4,7 @@ modified: 2026-02-03
 published: 2026-04-01
 ---
 
-#graphentheorie 
+#graphentheorie
 
 Ein **gerichteter Graph** (auch **Digraph**) ist ein Graph $G=(V,E)$, bei dem jede Kante eine Richtung besitzt. Die Kanten werden hier oft **gerichtete Kanten** oder **Bögen** genannt und sind **geordnete Paare**:
 
