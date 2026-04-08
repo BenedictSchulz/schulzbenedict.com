@@ -52,6 +52,8 @@ while [ "$#" -gt 0 ]; do
   shift
 done
 
+cd "$REPO_DIR"
+
 PUBLISH_LIST=$(mktemp)
 PUBLISH_PATH_LIST=$(mktemp)
 IMAGE_REF_LIST=$(mktemp)
