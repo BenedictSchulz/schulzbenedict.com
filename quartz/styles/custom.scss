@@ -14,6 +14,11 @@
   display: none;
 }
 
+// Homepage: show the navigation sidebar by default
+body[data-slug="index"] .sidebar.right > * {
+  display: revert;
+}
+
 // When toggled: show sidebar children
 body.show-sidebar .sidebar.right > * {
   display: revert;

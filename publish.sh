@@ -74,6 +74,11 @@ has_publish_true() {
     | grep -qi '^publish: *true'
 }
 
+has_publish_false() {
+  awk '/^---$/ { if (++c == 2) exit } c == 1 { print }' "$1" \
+    | grep -qi '^publish: *false'
+}
+
 is_newer() {
   [ ! -f "$2" ] && return 0
   [ "$1" -nt "$2" ]
@@ -189,6 +194,9 @@ if [ -d "$VAULT_PATH/$NOTES_DIR" ]; then
   while IFS= read -r -d '' file; do
     filename="$(basename "$file")"
     if echo "$filename" | grep -qE "^(${SKIP_FILES})$"; then
+      continue
+    fi
+    if has_publish_false "$file"; then
       continue
     fi
     rel_path="${file#$VAULT_PATH/$NOTES_DIR/}"
